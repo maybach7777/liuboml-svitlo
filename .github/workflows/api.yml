@@ -1,15 +1,17 @@
-name: test-volyn
+name: test-api
 on: workflow_dispatch
 jobs:
   t:
     runs-on: ubuntu-latest
     steps:
-      - name: api test
+      - name: api test 2
         run: |
           UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
           B="https://api-voe-poweron.inneti.net"
-          for P in "/media/2026/11/6b05dea81a409_GPV.png" "/" "/api/" "/api/v1/" "/swagger/" "/docs/" "/admin/" "/api/schedule/" "/api/gpv/" "/api/schedules/"; do
-            echo "=================== $P"
-            curl -s -A "$UA" -o out.txt -w "STATUS %{http_code} TYPE %{content_type} SIZE %{size_download}\n" "$B$P" || true
-            case "$P" in *.png) ;; *) head -c 600 out.txt; echo ;; esac
+          for P in "/api" "/api/docs.jsonld" "/api/docs.json" "/api/index.jsonld" "/api/docs?format=json"; do
+            for A in "application/ld+json" "application/json"; do
+              echo "=================== $P  [$A]"
+              curl -sL -A "$UA" -H "Accept: $A" -o out.txt -w "STATUS %{http_code} TYPE %{content_type} SIZE %{size_download}\n" "$B$P" || true
+              head -c 2500 out.txt; echo
+            done
           done
