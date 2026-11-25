@@ -4,12 +4,18 @@ jobs:
   t:
     runs-on: ubuntu-latest
     steps:
-      - name: api test 3
+      - name: api test 4
         run: |
           UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
           B="https://api-voe-poweron.inneti.net"
-          for P in "/api/actual_gpv_graphs" "/api/city_gpvs?page=1" "/api/street_gpvs?page=1" "/api/pw_address_queues?page=1"; do
+          for P in \
+            "/api/actual_gpv_graphs?dateGraph%5Bafter%5D=2026-11-24" \
+            "/api/archive_gpv_graphs?page=1" \
+            "/api/media_objects?page=1" \
+            "/api/blog_gpvs?page=1" \
+            "/api/options?page=1"; do
             echo "=================== $P"
             curl -sL -A "$UA" -H "Accept: application/ld+json" -o out.txt -w "STATUS %{http_code} SIZE %{size_download}\n" "$B$P" || true
-            head -c 3000 out.txt; echo
+            python3 -c "import json;d=json.load(open('out.txt'));print('TOTAL',d.get('hydra:totalItems'));print(json.dumps(d.get('hydra:member',d),ensure_ascii=False)[:1500])" || head -c 1500 out.txt
+            echo
           done
